@@ -3,11 +3,12 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
+from sklearn import linear_model
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
-from sklearn_pandas import DataFrameMapper
+from src.scatter import mod_z_score
 
 def train():
     """Trains a linear regression model on the full dataset and stores output."""
@@ -17,9 +18,9 @@ def train():
     # Define features to use - run with all features for now
     num_features =  [
         'total_area_sqm', 'surface_land_sqm', 
-        'nbr_frontages', 'nbr_bedrooms', 'terrace_sqm', 'garden_sqm',
-        'primary_energy_consumption_sqm', 'cadastral_income'
+        'nbr_frontages', 'nbr_bedrooms',
         ]
+
     fl_features = [
         'fl_furnished',
         'fl_open_fire',
@@ -41,6 +42,8 @@ def train():
         'heating_type'
     ]
 
+    # Remove outliers on numerical values
+    data = mod_z_score(data, num_features)
 
     # Split the data into features and target
     X = data[num_features + fl_features + cat_features]
@@ -51,23 +54,14 @@ def train():
         X, y, test_size=0.20, random_state=505
     )
 
-    # WIP
-    #-------- Use DataFrameMapper to select which columns to standardize ------ 
-    # mapper = DataFrameMapper([
-    # (num_features, [SimpleImputer(), StandardScaler()]),
-    # (cat_features, OneHotEncoder())
-    # ], df_out=True)
-    
-    # Test this first
-    #result = np.round(mapper.fit_transform(X_train.copy()), 2)
 
-    # scaler = StandardScaler()
-    # normalized_x_train = scaler.fit_transform(X_train)
-    #-------------------------------------------------#
-
+    # Scale data
+    scaler = StandardScaler()
+    X_train[num_features] = scaler.fit_transform(X_train[num_features])
+    X_test[num_features] = scaler.transform(X_test[num_features])
 
     # Impute missing values using SimpleImputer
-    imputer = SimpleImputer(strategy="mean")
+    imputer = SimpleImputer(strategy="median")
     imputer.fit(X_train[num_features])
     X_train[num_features] = imputer.transform(X_train[num_features])
     X_test[num_features] = imputer.transform(X_test[num_features])
@@ -118,7 +112,7 @@ def train():
         "enc": enc,
         "model": model,
     }
-    joblib.dump(artifacts, "models/artifacts.joblib")
+    joblib.dump(artifacts, "models/artifacts-z-outlier-lr.joblib")
 
 
 if __name__ == "__main__":
