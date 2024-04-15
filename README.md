@@ -1,5 +1,7 @@
 # Machine Learning Model for house predictions
 
+Underneath you will find a Model Card example for one of the models that were build for predicting house prices in Belgium. The rest of this repo contains exploratory analysis and different types of models tested.
+
 ## Model Card: Linear Regression Model
 
 ### Overview
