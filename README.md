@@ -1,4 +1,4 @@
-# immo-eliza-ml
+# Machine Learning Model for house predictions
 
 ## Model Card: Linear Regression Model
 
